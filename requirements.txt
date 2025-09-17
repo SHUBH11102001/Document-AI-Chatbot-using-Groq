@@ -12,3 +12,4 @@ mysql-connector-python
 huggingface-hub
 faiss-cpu
 langchain_huggingface
+sentence-transformers

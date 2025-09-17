@@ -2,9 +2,9 @@ import streamlit as st
 import pandas as pd
 from sqlalchemy import create_engine
 from langchain_groq import ChatGroq
-from langchain.agents import create_sql_agent
-from langchain.sql_database import SQLDatabase
-from langchain.agents.agent_toolkits import SQLDatabaseToolkit
+from langchain_community.agent_toolkits.sql.base import create_sql_agent
+from langchain_community.utilities import SQLDatabase
+from langchain_community.agent_toolkits.sql.toolkit import SQLDatabaseToolkit
 from langchain.agents.agent_types import AgentType
 import tempfile
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -19,7 +19,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from pathlib import Path
 import sqlite3
-from langchain.callbacks import StreamlitCallbackHandler
+from langchain_community.callbacks.streamlit import StreamlitCallbackHandler
 
 st.set_page_config(page_title="AI Document Chatbot", page_icon="🤖")
 
@@ -35,8 +35,22 @@ doc_type = st.sidebar.selectbox("Choose the document type you want to interact w
 if not api_key:
     st.info("Please enter your Groq API Key.")
 else:
+    available_models = [
+        "llama-3.1-8b-instant",
+        "deepseek-r1-distill-llama-70b",
+        "qwen/qwen3-32b",
+        "llama-3.3-70b-versatile",
+    ]
+    chosen_model = st.sidebar.selectbox("Groq model", available_models, index=0)
+
+    llm = ChatGroq(
+        groq_api_key=api_key,
+        model_name=chosen_model,
+        temperature=0,
+        streaming=True,
+    ) 
     
-    llm = ChatGroq(groq_api_key=api_key, model_name="Llama3-8b-8192", streaming=True)
+    # llm = ChatGroq(groq_api_key=api_key, model_name="llama-3.1-8b-instant", streaming=True, temperature=0)
 
     
     if f"{doc_type}_messages" not in st.session_state:
